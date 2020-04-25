@@ -3,6 +3,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+#Project
+datasets
+*.tmp
+.idea
+.ipynb_checkpoints
+
 # C extensions
 *.so
 
@@ -102,6 +108,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
+.idea
 .env
 .venv
 env/
