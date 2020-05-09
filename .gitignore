@@ -8,6 +8,8 @@ datasets
 *.tmp
 .idea
 .ipynb_checkpoints
+training_checkpoints
+runs
 
 # C extensions
 *.so

@@ -114,8 +114,6 @@ def normalize_image(image):
     return new_img
 
 
-
-
 def alpha_composite(front, back):
     """Alpha composite two RGBA images.
     Keyword Arguments:
@@ -161,11 +159,9 @@ def alpha_composite_with_color(image, color=(255, 255, 255)):
 
 def convert_to_rgb(image):
     """
-    Converts RGBA PIL image into RGB image.
-    INPUT:
-        image - PIL RGBA image
-    OUTPUT:
-        image_rgb - PIL image converted to RGB
+    Converts RGBA PIL to RGB image.
+    :param image: PIL RGBA image
+    :return: PIL RGB image
     """
     image_rgb = alpha_composite_with_color(image)
     image_rgb.convert('RGB')
