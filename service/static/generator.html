@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" charset="UTF-8"/>
-    <title>Draw image</title>
+    <title>Draw generator</title>
     <link href="css/bootstrap.css" rel="stylesheet"/>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="http://cdn.jsdelivr.net/jquery.validation/1.15.0/jquery.validate.min.js"></script>
@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
     <link rel="shortcut icon" href="/images/icon.png"/>
     <script src="/js/jquery-3.1.1.min.js"></script>
-    <script src="/js/draw.js"></script>
+    <script src="/js/generator.js"></script>
 </head>
 <body>
     <nav class="navbar navbar-default navbar-static-top">
@@ -18,7 +18,7 @@
             <div id="navbar" class="navbar-collapse">
                 <ul class="nav text-center">
                     <li>
-                        <h1>Draw image</h1>
+                        <h1>Draw generator</h1>
                     </li>
                 </ul>
             </div>
@@ -30,15 +30,11 @@
         </div>
     </div>
     <div class="container" align="center">
-        <canvas id="canvas" width="400" height="400" style="outline: black 3px solid;" ></canvas>
+        <img id="showImage" width="400" height="400" style="outline: black 3px solid;"></img>
     </div>
     <div class="container" align="center">
-        <button id="submitBtn" type="button" class="btn btn-primary" onclick="submitImage()">Submit</button>
-        <a id="downloadBtn" href="#" class="btn btn-primary">Download</a>
-        <button id="clearBtn" type="button" class="btn btn-primary" onclick="erase()">Clear</button>
-    </div>
-    <div class="container" align="center">
-        <h3 id="img_class">Class: ?</h3>
+        <h3 id="img_class">Class:</h3>
+        <button id="generateBtn" type="button" class="btn btn-primary" onclick="generateImg()">Generate</button>
     </div>
 </body>
 </html>

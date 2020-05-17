@@ -1,21 +1,26 @@
 import argparse
 import base64
 import io
+from io import StringIO
 import json
-import torch
 import numpy as np
 from PIL import Image
 from PIL import ImageOps
+from skimage.io import imsave
 from collections import OrderedDict
 
+# PyTorch
 import torch
 from torch import nn
 from torch import optim
 import torch.nn.functional as F
 from torchvision import datasets, transforms
 
-from flask import Flask, request, jsonify, abort
+# Tensorflow
+import tensorflow as tf
+from tensorflow import keras
 
+from flask import Flask, request, send_file
 
 def load_label_dict():
     with open('label_dict.json') as f:
@@ -23,7 +28,8 @@ def load_label_dict():
 
 
 encode_dict = load_label_dict()
-model = None
+model_cls = None
+gan_dict = {}
 
 
 def decode_class(class_index):
@@ -45,10 +51,8 @@ app = Flask(__name__, static_url_path="", static_folder="static")
 def crop_image(image):
     """
     Crops image (crops out white spaces).
-    INPUT:
-        image - PIL image of original size to be cropped
-    OUTPUT:
-        cropped_image - PIL image cropped to the center  and resized to (28, 28)
+    :param image: PIL image of original size to be cropped
+    :return: PIL image cropped to the center  and resized to (28, 28)
     """
     cropped_image = image
 
@@ -85,10 +89,8 @@ def crop_image(image):
 def normalize(arr):
     """
     Function performs the linear normalizarion of the array.
-    INPUT:
-        arr - orginal numpy array
-    OUTPUT:
-        arr - normalized numpy array
+    :param arr: original numpy array
+    :return: normalized numpy array
     """
     arr = arr.astype('float')
     # Do not touch the alpha channel
@@ -104,10 +106,8 @@ def normalize(arr):
 def normalize_image(image):
     """
     Function performs the normalization of the image.
-    INPUT:
-        image - PIL image to be normalized
-    OUTPUT:
-        new_img - PIL image normalized
+    :param image: PIL image to be normalized
+    :return: PIL image normalized
     """
     arr = np.array(image)
     new_img = Image.fromarray(normalize(arr).astype('uint8'),'RGBA')
@@ -115,11 +115,11 @@ def normalize_image(image):
 
 
 def alpha_composite(front, back):
-    """Alpha composite two RGBA images.
-    Keyword Arguments:
-    front -- PIL RGBA Image object
-    back -- PIL RGBA Image object
-
+    """
+    Alpha composite two RGBA images.
+    :param front: PIL RGBA Image object
+    :param back: PIL RGBA Image object
+    :return: PIL RGBA Image object
     """
     front = np.asarray(front)
     back = np.asarray(back)
@@ -144,14 +144,11 @@ def alpha_composite_with_color(image, color=(255, 255, 255)):
     """
     Helper function to convert RGBA to RGB.
     https://stackoverflow.com/questions/9166400/convert-rgba-png-to-rgb-with-pil
-
     Alpha composite an RGBA image with a single color image of the
     specified color and the same size as the original image.
-
-    Keyword Arguments:
-    image -- PIL RGBA Image object
-    color -- Tuple r, g, b (default 255, 255, 255)
-
+    :param image: PIL RGBA Image object
+    :param color: Tuple RGB (default 255, 255, 255)
+    :return:
     """
     back = Image.new('RGBA', size=image.size, color=color + (255,))
     return alpha_composite(image, back)
@@ -169,7 +166,12 @@ def convert_to_rgb(image):
     return image_rgb
 
 
-def load_model(filepath):
+def load_clf_model(filepath):
+    """
+    Load PyTorch classification model
+    :param filepath: path to model.
+    :return: classificator
+    """
     print("Loading model from {} \n".format(filepath))
     model_info = torch.load(filepath)
     input_size = model_info['input_size']
@@ -191,13 +193,20 @@ def load_model(filepath):
     return model
 
 
+def load_gan_model(cls):
+    """
+    Load Tensorflow GAN to draw images.
+    :param cls: class of GAN
+    :return: model
+    """
+    return keras.models.load_model('models/{}-gan.h5'.format(cls))
+
+
 def convert_to_np(pil_img):
     """
-    Function to convert PIL Image to numpy array.
-    INPUT:
-        pil_img - (PIL Image) 28x28 image to be converted
-    OUTPUT:
-        img - (numpy array) converted image with shape (28, 28)
+    Convert PIL Image to numpy array.
+    :param pil_img: (PIL Image) 28x28 image to be converted
+    :return: (numpy array) converted image with shape (28, 28)
     """
     pil_img = pil_img.convert('RGB')
 
@@ -214,19 +223,14 @@ def convert_to_np(pil_img):
 def get_prediction(input):
     """
     Function to get prediction (label of class with the greatest probability).
-
-    INPUT:
-        input - (numpy) input vector
-
-    OUTPUT:
-        label - predicted class label
-        label_name - name of predicted class
+    :param input: (numpy) input vector
+    :return: label, label_name, preds
     """
     input = torch.from_numpy(input).float()
     input = input.resize_(1, 784)
 
     with torch.no_grad():
-        logits = model.forward(input)
+        logits = model_cls.forward(input)
 
     ps = F.softmax(logits, dim=1)
     preds = ps.numpy()
@@ -237,9 +241,38 @@ def get_prediction(input):
     return label, label_name, preds
 
 
+def generate_image(model, img_count = 1, weight=400, height=400):
+    seed = tf.random.normal([img_count, 100])
+    predictions = model(seed, training=False)
+    na = predictions[0].numpy()
+    na = na  * 127.5 + 127.5
+    img = Image.fromarray(na.reshape((28,28))).convert('RGB')
+    rimg = img.resize((weight,height))
+    return ImageOps.invert(rimg)
+
+
 @app.route('/')
 def root():
+    return app.send_static_file('index.html')
+
+
+@app.route('/draw')
+def draw():
     return app.send_static_file('draw.html')
+
+
+@app.route('/generator')
+def generator():
+    return app.send_static_file('generator.html')
+
+
+@app.route('/generate/<label>')
+def generate(label):
+    img = generate_image(gan_dict[label])
+    img_io = io.BytesIO()
+    img.save(img_io, 'PNG')
+    img_io.seek(0)
+    return send_file(img_io, mimetype='image/PNG')
 
 
 @app.route('/classify', methods=['POST'])
@@ -264,10 +297,11 @@ def classify():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--web_app_port', default='9000')
-    parser.add_argument('--model_path', default='model.nnet')
     args = parser.parse_args()
-    model_path = args.model_path
-    print("Load model from {} \n".format(model_path))
-    model = load_model(model_path)
-    model.eval()
+    print("Load classification model")
+    model_cls = load_clf_model('models/model.nnet')
+    model_cls.eval()
+    print("Load GAN models for labels {} \n".format(encode_dict))
+    for label in encode_dict:
+        gan_dict[label] = load_gan_model(label)
     app.run(host='0.0.0.0', port=args.web_app_port)
