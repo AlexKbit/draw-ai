@@ -1,12 +1,10 @@
 import argparse
 import base64
 import io
-from io import StringIO
 import json
 import numpy as np
 from PIL import Image
 from PIL import ImageOps
-from skimage.io import imsave
 from collections import OrderedDict
 
 # PyTorch
@@ -14,7 +12,6 @@ import torch
 from torch import nn
 from torch import optim
 import torch.nn.functional as F
-from torchvision import datasets, transforms
 
 # Tensorflow
 import tensorflow as tf
