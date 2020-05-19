@@ -266,6 +266,11 @@ def generator():
     return app.send_static_file('generator.html')
 
 
+@app.route('/fight')
+def fight():
+    return app.send_static_file('fight.html')
+
+
 @app.route('/generate/<label>')
 def generate(label):
     img = generate_image(gan_dict[label])
