@@ -1,8 +1,7 @@
 FROM python:3
 
 ENV APP_HOME="/usr/src/app" \
-    WEB_PORT="8080" \
-    MODEL_PATH="model.nnet"
+    WEB_PORT="80"
 
 WORKDIR ${APP_HOME}
 
