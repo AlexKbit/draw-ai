@@ -19,6 +19,7 @@ from tensorflow import keras
 
 from flask import Flask, request, send_file
 
+
 def load_label_dict():
     with open('label_dict.json') as f:
         return json.load(f)
@@ -131,7 +132,6 @@ def alpha_composite(front, back):
     np.seterr(**old_setting)
     result[alpha] *= 255
     np.clip(result, 0, 255)
-    # astype('uint8') maps np.nan and np.inf to 0
     result = result.astype('uint8')
     result = Image.fromarray(result, 'RGBA')
     return result
