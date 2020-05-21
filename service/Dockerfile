@@ -11,7 +11,5 @@ RUN pip install --upgrade pip \
  && pip install --no-cache-dir -r ${APP_HOME}/requirements.txt
 
 COPY . ${APP_HOME}
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-CMD ["/entrypoint.sh"]
+CMD ["python", "${APP_HOME}/app.py", "--web_app_port", "${WEB_PORT}"]
 
