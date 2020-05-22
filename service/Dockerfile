@@ -1,15 +1,11 @@
-FROM python:3
+FROM python:3.7.0-slim
 
-ENV APP_HOME="/usr/src/app" \
-    WEB_PORT="80"
-
-WORKDIR ${APP_HOME}
-
-COPY requirements.txt ${APP_HOME}
+RUN mkdir /app
+WORKDIR /app
+ADD . .
 
 RUN pip install --upgrade pip \
- && pip install --no-cache-dir -r ${APP_HOME}/requirements.txt
+ && pip install --no-cache-dir -r /app/requirements.txt
 
-COPY . ${APP_HOME}
-CMD ["python", "${APP_HOME}/app.py", "--web_app_port", "${WEB_PORT}"]
+CMD python app.py --web_app_port $PORT
 
