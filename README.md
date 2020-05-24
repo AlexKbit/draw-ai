@@ -8,6 +8,12 @@ The project contains two type of models:
 
 [Open in Web (Heroku)](https://draw-ai-alexkbit.herokuapp.com)
 
+## Dataset
+I use [Quick Draw Dataset](https://github.com/googlecreativelab/quickdraw-dataset).
+
+Quick Draw Dataset is a collection of 50 million drawings across 345 categories, contributed by players of the game Quick, Draw!.
+
+
 ## Classifier
 Classification is the process of predicting the class of given data points.
 Classes are sometimes called as targets/ labels or categories.
