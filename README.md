@@ -26,6 +26,10 @@ Model Architecture:
 
 <img src="assets/classifier-arch.png" width="540" height="300px"/>
 
+Model quality:
+
+<img src="assets/draw-class-model-accuracy.png" width="390px" height="280px"/>
+
 ## GAN (Generative adversarial network)
 DCGAN - Deep Convolutional Generative Adversarial Network.
 Generative Adversarial Networks (GANs) are one of the most interesting ideas in computer science today.
@@ -33,6 +37,10 @@ Two models are trained simultaneously by an adversarial process.
 A generator ("the artist") learns to create images that look real, while a discriminator ("the art critic") learns to tell real images apart from fakes.
 
 The solution uses a generator implemented by Tensorflow framework in order to generate images of required classes.
+
+GAN-apple train process:
+
+<img src="assets/draw-gan-train-apple.gif" width="288px" height="288px"/>
 
 Model Architecture:
 

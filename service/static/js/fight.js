@@ -1,6 +1,6 @@
 var canvas = null;
 var ctx = null;
-var labels = ["apple", "clock", "door", "diamond", "fork", "eye", "star", "axe", "sword", "fish"];
+var labels = ["apple", "cloud", "diamond", "donut", "door", "mug", "house", "butterfly", "microphone", "bicycle"];
 var targetLabel = '?';
 var resultLabel = '?';
 var imdData = null;

@@ -1,4 +1,4 @@
-var labels = ["apple", "clock", "door", "diamond", "fork", "eye", "star", "axe", "sword", "fish"];
+var labels = ["apple", "cloud", "diamond", "donut", "door", "mug", "house", "butterfly", "microphone", "bicycle"];
 
 function generateImg() {
     label = getRandomLabel();

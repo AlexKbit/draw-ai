@@ -7,7 +7,7 @@ var currY = 0;
 var dot_flag = false;
 
 var lineColor = "black";
-var lineWidth = 3;
+var lineWidth = 5;
 
 function init() {
     canvas = document.getElementById('canvas');
