@@ -15,6 +15,7 @@ def load_label_dict():
     with open('service/label_dict.json') as f:
         return json.load(f)
 
+
 # URL to dataset in GCP Storage
 dataset_url = 'https://storage.googleapis.com/quickdraw_dataset/full/numpy_bitmap/'
 labels = load_label_dict()
@@ -22,6 +23,7 @@ data_filepath = 'datasets'
 num_categories = len(labels)
 
 # Hyperparameters for our network
+model_path = 'service/models/model.nnet'
 input_size = 784
 hidden_sizes = [128, 100, 64]
 output_size = 10
@@ -81,14 +83,31 @@ def prepare_datasets(labels, num_examples):
     return train_test_split(X, y, test_size=0.3, random_state=1)
 
 
-def main(num_examples, epochs):
+def save_np_data(data, file_name):
+    with open('{}/{}'.format(data_filepath, file_name), 'wb') as f:
+        np.save(f, data)
+
+
+def load_np_data(file_name):
+    with open('{}/{}'.format(data_filepath, file_name), 'rb') as f:
+        return np.load(f)
+
+
+def main(num_examples, epochs, from_cache):
     print('Start train process with below properties:')
     print('Number of examples: {}'.format(num_examples))
     print('Train epochs: {}'.format(epochs))
-    download_datasets(labels)
-    X_train, X_test, y_train, y_test = prepare_datasets(labels, num_examples)
-    print('Generate new data and join to train dataset')
-    X_train, y_train = join_transformed_images(X_train, y_train)
+    if from_cache:
+        print('Load data from stage')
+        X_train = load_np_data('X_train.npy')
+        y_train = load_np_data('y_train.npy')
+        X_test = load_np_data('X_test.npy')
+        y_test = load_np_data('y_test.npy')
+    else:
+        download_datasets(labels)
+        X_train, X_test, y_train, y_test = prepare_datasets(labels, num_examples)
+        print('Generate new data and join to train dataset')
+        X_train, y_train = join_transformed_images(X_train, y_train)
 
     train = torch.from_numpy(X_train).float()
     train_labels = torch.from_numpy(y_train).long()
@@ -101,22 +120,23 @@ def main(num_examples, epochs):
     fit_model(model, train, train_labels,
               epochs=epochs, n_chunks=n_chunks, learning_rate=learning_rate, weight_decay=weight_decay)
     evaluate_model(model, train, train_labels, test, test_labels)
-    filepath = '../service/models/model.nnet'
     metainfo = {'input_size': input_size,
                 'output_size': output_size,
                 'hidden_layers': hidden_sizes,
                 'dropout': dropout,
                 'state_dict': model.state_dict()}
     print('End fit')
-    torch.save(metainfo, filepath)
-    print("Model saved to {}\n".format(filepath))
+    torch.save(metainfo, model_path)
+    print("Model saved to {}\n".format(model_path))
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--num_examples', default=3000)
-    parser.add_argument('--epochs', default=100)
+    parser.add_argument('--epochs', default=25)
+    parser.add_argument('--fromCache', default=False)
     args = parser.parse_args()
     num_examples = args.num_examples
     epochs = args.epochs
-    main(num_examples, epochs)
+    from_cache = args.fromCache
+    main(num_examples, epochs, from_cache)
