@@ -1,5 +1,4 @@
 import argparse
-import wget
 import numpy as np
 import os
 import json
@@ -20,57 +19,27 @@ data_filepath = 'datasets'
 num_categories = len(labels)
 BUFFER_SIZE = 60000
 BATCH_SIZE = 256
-
 noise_dim = 100
 num_examples_to_generate = 16
 
 
-def download_datasets(labels):
-    for category in labels:
-        if not os.path.exists(data_filepath + '/' + str(category) + '.npy'):
-            print("Start downloading data process for [{}].".format(category))
-            url = dataset_url + str(category) + '.npy'
-            wget.download(
-                url=url,
-                out=data_filepath
-            )
-            print("Dataset for {} was successfully downloaded.".format(category))
-        else:
-            print("Dataset for {} is already downloaded.".format(category))
+def prepare_datasets(label):
+    (x, y), (_, _) = tf.keras.datasets.mnist.load_data(path=data_filepath+'mnist.npz')
+    data = list(filter(lambda v: v[1] == label, zip(x, y)))
+    (xt, yt) = list(zip(*data))
+    train_labels = np.array(yt)
+    train_images = np.array(xt)
+    return train_images, train_labels
 
 
-def prepare_datasets(labels, num_examples):
-    classes_dict = {}
-    for category in labels:
-        classes_dict[category] = np.load(data_filepath + '/' + str(category) + '.npy')
-    # Generate labels and add labels to loaded data
-    for i, (key, value) in enumerate(classes_dict.items()):
-        value = value.astype('float32')
-        if i == 0:
-            classes_dict[key] = np.c_[value, np.zeros(len(value))]
-        else:
-            classes_dict[key] = np.c_[value, i * np.ones(len(value))]
-
-    lst = []
-    for key, value in classes_dict.items():
-        lst.append(value[:num_examples])
-    tmp = np.concatenate(lst)
-
-    # Split the data into features and class labels (X & y respectively)
-    y = tmp[:, -1].astype('int')
-    x = tmp[:, :784]
-    return x, y
-
-
-def main(num_examples, epochs):
-    download_datasets(labels)
+def main(epochs):
     for label in labels:
-        train_label_gan(label, num_examples, epochs)
+        train_label_gan(label, epochs)
 
 
-def train_label_gan(label, num_examples, epochs):
+def train_label_gan(label, epochs):
     print('Train GAN for {} label'.format(label))
-    train_images, train_labels = prepare_datasets(list([label]), num_examples)
+    train_images, train_labels = prepare_datasets(label)
     train_images = train_images.reshape(train_images.shape[0], 28, 28, 1).astype('float32')
     train_images = (train_images - 127.5) / 127.5  # Normalize the images to [-1, 1]
     # Batch and shuffle the data
@@ -102,9 +71,7 @@ def train_label_gan(label, num_examples, epochs):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--num_examples', default=6000)
     parser.add_argument('--epochs', default=100)
     args = parser.parse_args()
-    num_examples = args.num_examples
     epochs = args.epochs
-    main(num_examples, epochs)
+    main(epochs)
