@@ -9,7 +9,7 @@ data_filepath = 'datasets'
 # Hyperparameters for our network
 model_path = 'service/models/model.nnet'
 input_size = 784
-hidden_sizes = [128, 100, 64]
+hidden_sizes = [392, 196, 98]
 output_size = 10
 dropout = 0.0
 # Fit parameters
@@ -24,6 +24,8 @@ def prepare_datasets():
     :return: X_train, X_test, y_train, y_test
     """
     (x, y), (x_test, y_test) = tf.keras.datasets.mnist.load_data(path=data_filepath + 'mnist.npz')
+    x = x.reshape(x.shape[0], input_size) / 255
+    x_test = x_test.reshape(x_test.shape[0], input_size) / 255
     return x, y, x_test, y_test
 
 
