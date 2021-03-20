@@ -4,7 +4,7 @@ flask==1.1.1
 flask-cors==3.0.8
 Pillow==6.2.0
 requests==2.22.0
-jinja2==2.10.3
+jinja2==2.11.3
 awscli==1.16.14
 tensorboard==2.2.1
 tensorboard-plugin-wit==1.6.0.post3
